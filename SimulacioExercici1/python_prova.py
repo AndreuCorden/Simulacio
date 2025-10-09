@@ -1,0 +1,70 @@
+import random
+import math
+
+#  event scheduling
+
+# --- Setup: Global Parameters and Functions ---
+
+MAC_CAPACITY = 6
+CAM_CAPACITY = 12
+SIMULATION_TIME = 1440
+BATCH_SIZE = 200 # The value from ASSEMBLE 200
+
+# ADVANCE time parameters
+ADVANCE_SERVICE_MEAN = 0.75
+ADVANCE_SERVICE_ERR_MEAN = 15
+ADVANCE_SERVICE_ERR_DEV = 2
+ADVANCE_CAM_MEAN = 372.5
+ADVANCE_CAM_DEV = 2.5
+
+#SIMULATE 1,A
+
+#algo FUNCTION RN1,R
+#1 1
+#2 2
+#3 4
+#4 8
+#5 16
+#6 32
+#7 64
+#100 6400
+
+#mac CAPACITY 6
+#cam CAPACITY 12
+#	GENERATE 0.15,0.05,,10000,0
+#	GOTO arr,0.9
+if random.random() <= 0.1:
+#	LET PRIORITY=1
+    priority = 1
+else:
+    priority = 0
+#arr	ARRIVE queue
+#	ENTER mac,1
+#	DEPART queue
+#	ADVANCE FN$XPDIS*0.75
+#	GOTO noerr,0.99
+#	ADVANCE 15,2
+#noerr	LEAVE mac,1
+#	GOTO znt,0.5
+if random.random() <= 0.5:
+#	ASSEMBLE 200
+#	ARRIVE queo
+#	ENTER cam,1
+#	DEPART queo
+#	ADVANCE 372.5,2.5
+#	LEAVE cam,1
+#	GOTO goto
+else:
+#znt	ASSEMBLE 200
+#	ARRIVE quet
+#	ENTER cam,1
+#	DEPART quet
+#	ADVANCE 372.5,2.5
+#	LEAVE cam,1
+#goto	TERMINATE
+
+#	GENERATE 1440
+#	TERMINATE 1
+
+#START 1
+#END
