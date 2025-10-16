@@ -65,12 +65,13 @@ class StatisticsCollector:
         self.jobs_generated = 0
         self.jobs_terminated = 0
         self.priority_1_count = 0
-        self.assembled_batches = 0
         
         self.queo_wait_list = [] 
         self.quet_wait_list = [] 
         
         self.mac_wait_times = []
+        self.queo_wait_times = []
+        self.quet_wait_times = []
         self.cam_wait_times = []
         self.system_times = [] 
         
@@ -140,13 +141,14 @@ class StatisticsCollector:
         print(f"   - CAM QUEO Queue (blocks): {cam_in_queue_queo_blocks} ({queo_in_queue_jobs} jobs)")
         print(f"   - CAM QUET Queue (blocks): {cam_in_queue_quet_blocks} ({quet_in_queue_jobs} jobs)")
         print("   - CAM Service (in use jobs):", cam_in_service)
-        print(f"   - ASSEMBLE (queo) Waiting: {assemble_o_waiting} jobs")
-        print(f"   - ASSEMBLE (quet) Waiting: {assemble_t_waiting} jobs")
+        print(f"   - Elements in QUEO: {ASSEMBLEQUEO}")
+        
+        print(f"   - Elements in QUET: {ASSEMBLEQUET}")
         print("-" * 50)
         
         print(f"2. Jobs Generated: {self.jobs_generated}")
         print(f"3. Jobs Terminated: {self.jobs_terminated}")
-        print(f"4. Total Batches ({BATCH_SIZE} items) Assembled: {self.assembled_batches}")
+        
         
         print("\n--- Time-Weighted Averages and Wait Times ---")
         
@@ -158,6 +160,8 @@ class StatisticsCollector:
         avg_queo_queue = self.calculate_time_weighted_average(self.queue_queo_length)
         avg_quet_queue = self.calculate_time_weighted_average(self.queue_quet_length)
         
+        print(f"4.1 Average time in QUEO: {sum(self.queo_wait_times) / len(self.queo_wait_times):.3f}")
+        print(f"4.2 Average time in QUET: {sum(self.quet_wait_times) / len(self.quet_wait_times):.3f}")
         print(f"5. Average MAC Queue Size (Jobs): {avg_mac_queue:.3f}")
         print(f"6. Average CAM QUEO Queue Size (Blocks): {avg_queo_queue:.3f}")
         print(f"7. Average CAM QUET Queue Size (Blocks): {avg_quet_queue:.3f}")
@@ -209,12 +213,15 @@ def job_process(env, mac, cam, stats, job_id, priority, queo_assembler, quet_ass
             ASSEMBLEQUET = 0
             # ARRIVE quet
             stats.quet_wait_list.append(job_id)
+            quet_start_time = env.now
             stats.record_queue_length(stats.queue_quet_length, stats.quet_wait_list, is_cam_queue=True)
+
         
             with cam.request(priority=0) as req_cam:
                 yield req_cam
             
                 # Job is processed, remove from manual list 
+                stats.quet_wait_times.append(env.now - quet_start_time)
                 stats.quet_wait_list.remove(job_id)
                 stats.cam_wait_times.append(env.now - cam_wait_start)
                 stats.record_queue_length(stats.queue_quet_length, stats.quet_wait_list, is_cam_queue=True)
@@ -238,12 +245,14 @@ def job_process(env, mac, cam, stats, job_id, priority, queo_assembler, quet_ass
 
             # ARRIVE queo
             stats.queo_wait_list.append(job_id)
+            queo_start_time = env.now
             stats.record_queue_length(stats.queue_queo_length, stats.queo_wait_list, is_cam_queue=True)
         
             with cam.request(priority=0) as req_cam:
                 yield req_cam
             
                 # Job is processed, remove from manual list
+                stats.queo_wait_times.append(env.now - queo_start_time)
                 stats.queo_wait_list.remove(job_id)
                 stats.cam_wait_times.append(env.now - cam_wait_start)
                 stats.record_queue_length(stats.queue_queo_length, stats.queo_wait_list, is_cam_queue=True)
