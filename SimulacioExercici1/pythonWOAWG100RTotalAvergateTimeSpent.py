@@ -295,6 +295,7 @@ def job_process(env, mac, cam, stats, job_id, priority, queo_assembler, quet_ass
         stats.record_queue_length(stats.queue_mac_length, mac.queue)
         
         yield env.timeout(xpon_dist(ADVANCE_SERVICE_MEAN))
+        #yield env.timeout(normal_dist(0.75, 0.10))
         
         if random.random() >= 0.99:
             yield env.timeout(normal_dist(ADVANCE_SERVICE_ERR_MEAN, ADVANCE_SERVICE_ERR_DEV))
@@ -437,7 +438,7 @@ def run_simulation(until_time):
 # --- Execution ---
 if __name__ == '__main__':
     i = 0
-    while i < 10:
+    while i < 100:
         i = i + 1
         random.seed(42*i) 
         run_simulation(SIMULATION_TIME)
