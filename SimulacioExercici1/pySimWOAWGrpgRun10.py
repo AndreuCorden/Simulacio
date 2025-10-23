@@ -52,6 +52,24 @@ class BatchAssembler:
 # --- Statistics Collector Class (MODIFIED for Utilization & Graphs) ---
 
 class StatisticsCollector:
+    def record_final_state(self):
+        """Records the final state of utilization and queues at simulation end."""
+        current_time = self.env.now
+        
+        # Record MAC count
+        if not self.mac_usage or self.mac_usage[-1][0] < current_time:
+            self.mac_usage.append((current_time, self.mac.count))
+        
+        # Record CAM count
+        if not self.cam_usage or self.cam_usage[-1][0] < current_time:
+            self.cam_usage.append((current_time, self.cam.count))
+            
+        # Record final queue lengths 
+        # (These are already called in report(), but calling them here ensures they use the final env.now)
+        self.record_queue_length(self.queue_mac_length, self.mac.queue)
+        self.record_queue_length(self.queue_queo_length, self.queo_wait_list, is_cam_queue=True)
+        self.record_queue_length(self.queue_quet_length, self.quet_wait_list, is_cam_queue=True)
+
     def __init__(self, env):
         self.env = env
         self.jobs_generated = 0
@@ -401,6 +419,10 @@ def run_simulation(until_time):
     env.run(until=until_time)
     
     print(f"--- Simulation Run Complete at Time {env.now:.2f} ---")
+
+    # --- FIX: Record the final state at t=1440 before generating reports/graphs ---
+    stats.record_final_state() 
+    # --------------------------------------------------------------------------
     
     stats.report()
     
