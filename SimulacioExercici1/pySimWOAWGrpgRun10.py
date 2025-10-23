@@ -185,6 +185,7 @@ class StatisticsCollector:
 
             plt.title(f"{title} over Time")
             plt.xlabel("Simulation Time")
+            plt.xlim(0, SIMULATION_TIME) # <-- THIS NEW LINE
             plt.ylabel(ylabel)
             plt.grid(True, linestyle=':', alpha=0.6)
             plt.show()
